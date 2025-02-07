@@ -9,7 +9,7 @@ export function enterInsertMode(helixState: HelixState, before = true): void {
   // Helix doesn't clear selections on insert but doesn't overwrite the selection either, so our best option is to just clear them
   const editor = helixState.editorState.activeEditor!;
   editor.selections = editor.selections.map((selection) => {
-    const position = before ? selection.anchor : selection.active;
+    const position = before ? selection.anchor : selection.active.translate(0, 1);
     return new vscode.Selection(position, position);
   });
 
