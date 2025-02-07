@@ -415,18 +415,21 @@ function createWordForwardHandler(
 ): (vimState: HelixState, editor: vscode.TextEditor) => void {
   return (vimState, editor) => {
     execMotion(vimState, editor, ({ document, position }) => {
-      let character = position.character;
+      // no matter what, we advance 1 character
+      let character = position.character + 1;
       // Try the current line and if we're at the end go to the next line
       // This way we're only keeping one line of text in memory at a time
       // i is representing the relative line number we're on from where we started
-      for (let i = 0; i < document.lineCount; i++) {
-        const lineText = document.lineAt(position.line + i).text;
+      for (let i = position.line; i < document.lineCount; i++) {
+        const lineText = document.lineAt(i).text;
         const ranges = wordRangesFunction(lineText);
 
         const result = ranges.find((x) => x.start > character);
 
         if (result) {
-          return position.with({ character: result.start, line: position.line + i });
+          return position.with({ character: result.start - 1, line: i });
+        } else if (ranges.find((x) => x.end > character)) {
+          return position.with({ character: lineText.length, line: i });
         }
         // If we don't find anything on this line, search the next and reset the character to 0
         character = 0;
